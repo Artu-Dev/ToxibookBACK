@@ -8,14 +8,18 @@ export const validPost = async (req, res, next) => {
 
     const postIds = []
     if (isCommentOf) {
-      const commentPost = await Post.findById(isCommentOf);
+      const commentPost = await Post.findById(isCommentOf)
+      .populate("permissions");
 
-      if(!commentPost.canComment) return res.status(404).send({message: "Você nao pode commentar esse post"});
+      if(!commentPost.permissions.canComment) return res.status(404).send({message: "Você nao pode commentar esse post"});
       if(!commentPost) return res.status(404).send({message: "Não foi possivel encontrar o post para comentar"});
       postIds.push(isCommentOf);
     }
     if (isShareOf) {
-      const sharedPost = await Post.findById(isShareOf);
+      const sharedPost = await Post.findById(isShareOf)
+      .populate("permissions");
+
+      if(sharedPost.permissions.privatePost) return res.status(404).send({message: "Você nao pode compartilhar esse post"});
       if(!sharedPost) return res.status(404).send({message: "Não foi possivel encontrar o post para compartilhar"});
       postIds.push(isShareOf);
     }

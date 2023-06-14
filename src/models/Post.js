@@ -21,33 +21,34 @@ const PostSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: "posts"
   },
-  shares: {
-    type: mongoose.Types.ObjectId,
-    ref: "Shares"
+  likesList: {
+    type: Array,
   },
-  totalShares: {
-    type: Number,
-    default: 0
+  comments: {
+    type: Array
   },
-  canComment: {
-    type: Boolean,
-    default: true
-  },
-  likes: {
-    type: mongoose.Types.ObjectId,
-    ref: "likes"
+  sharesList: {
+    type: Array
   },
   totalLikes: {
     type: Number,
     default: 0
   },
-  comments: {
-    type: mongoose.Types.ObjectId,
-    ref: "posts"
+  totalComments: {
+    type: Number,
+    default: 0
+  },
+  totalShares: {
+    type: Number,
+    default: 0
   },
   createdAt: {
     type: Date,
     default: Date.now()
+  },
+  permissions: {
+    type: mongoose.Types.ObjectId,
+    ref: "postPerms"
   },
   editedAt: {
     type: Date,

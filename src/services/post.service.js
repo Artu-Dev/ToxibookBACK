@@ -1,7 +1,6 @@
 import Post from "../models/Post.js";
-import Likes from "../models/Likes.js";
-import Shares from "../models/Shares.js";
 import User from "../models/User.js";
+import PostPerms from "../models/PostPerms.js";
 
 
 export const createPostService = async (
@@ -9,7 +8,10 @@ export const createPostService = async (
   textContent,
   imageContent,
   isCommentOf,
-  isShareOf
+  isShareOf,
+
+  canComment = true,
+  privatePost = false,
 ) => {
   const post = await Post.create({
     user: userId,
@@ -18,20 +20,35 @@ export const createPostService = async (
     isCommentOf,
     isShareOf,
   });
-  const likes = await Likes.create({post: post._id});
-  const shares = await Shares.create({post: post._id});
+
+  const permissions = await PostPerms.create({
+    post: post._id,
+    canComment,
+    privatePost,
+  });
 
   if(isShareOf) {
-    await Shares.findByIdAndUpdate(isShareOf,
-      { $push: { shareslist: { user: userId, createdAt: Date.now() } } });
     await Post.findByIdAndUpdate(isShareOf, 
-      { $inc: { totalShares: 1 } });
-  }
+      { 
+        $inc: { totalShares: 1 },
+        $push: { sharesList: post._id }
+      }
+    );
+  };
+
+  if(isCommentOf) {
+    await Post.findByIdAndUpdate(isCommentOf, 
+      { 
+        $inc: { totalComments: 1 },
+        $push: { comments: post._id }
+      }
+    );
+  };
 
   await User.findByIdAndUpdate(userId, { $push: { posts: post._id } });
 
   return Post.findByIdAndUpdate(post._id, 
-    {likes, shares},
+    {permissions},
     {new: true}
   );
 };
@@ -41,6 +58,28 @@ export const getTrendingPostsService = () => Post.find()
 .populate({
   path: "user",
   select: "username profileImg tag"
+})
+.populate({ 
+  path: "isCommentOf",
+  strictPopulate: false,
+  select: "user",
+  populate: {
+    path: "user",
+    select: "tag"
+  }
+})
+.populate({ 
+  path: "isShareOf",
+  strictPopulate: false,
+  select: "user textContent imageContent createdAt",
+  populate: {
+    path: "user",
+    select: "username tag profileImg"
+  }
+})
+.populate({ 
+  path: "permissions",
+  select: "canComment privatePost"
 });
 
 export const getAllPostsService = () => Post.find()
@@ -56,14 +95,31 @@ export const getPostByIdService = (id) => Post.findById(id)
     select: "username profileImg tag"
   })
   .populate({ 
-    path: "isCommentOf",
+    path: "comments",
     strictPopulate: false,
     select: "user textContent imageContent"
   })
   .populate({ 
+    path: "isCommentOf",
+    strictPopulate: false,
+    select: "user",
+    populate: {
+      path: "user",
+      select: "tag"
+    }
+  })
+  .populate({ 
     path: "isShareOf",
     strictPopulate: false,
-    select: "user textContent imageContent"
+    select: "user textContent imageContent createdAt",
+    populate: {
+      path: "user",
+      select: "username tag profileImg"
+    }
+  })
+  .populate({ 
+    path: "permissions",
+    select: "canComment privatePost"
 });
 
 export const updatePostService = (id, textContent) => Post.findByIdAndUpdate(id, 
@@ -85,27 +141,31 @@ export const deletePostService = async (id, userId) => {
       $inc: { totalShares: -1 }
     });
   };
+  if (deletedPost.isCommentOf) {
+    await Post.findByIdAndUpdate(deletedPost.isCommentOf, {
+      $inc: { totalComments: -1 }
+    });
+  };
 
-  await Likes.findByIdAndDelete(deletedPost.likes);
-  await Shares.findByIdAndDelete(deletedPost.shares);
   await User.findByIdAndUpdate(userId, { $pull: { posts: deletedPost._id } });
 
   return deletedPost;
 };
 
-export const likePostService = async (userId, likeId, postId) => {
-  await Post.findByIdAndUpdate(postId, { $inc: { totalLikes: 1 } });
+export const likePostService = async (userId, postId) => Post.findOneAndUpdate(
+    { _id: postId, likesList: { $nin: [userId] } },
+    {
+      $push: { likesList: userId },
+      $inc: { totalLikes: 1 } 
+    }
+);
 
-  return Likes.findOneAndUpdate(
-    { _id: likeId, "likesList.user": { $nin: [userId] } },
-    { $push: { likesList: { user: userId, createdAt: Date.now() } } });
-};
-
-export const deleteLikePostService = async (userId, likeId, postId) => {
-  await Post.findByIdAndUpdate(postId, { $inc: { totalLikes: -2 } });
-
-  await Likes.findByIdAndUpdate(likeId, { $pull: { likesList: { user: userId } } });
-};
+export const deleteLikePostService = async (userId, postId) => Post.findByIdAndUpdate(postId,
+  {
+    $pull: { likesList: userId },
+    $inc: { totalLikes: -1 } 
+  }
+);
 
 export const getLikeDetailsService = (postId) => Likes.find({post: postId});
 

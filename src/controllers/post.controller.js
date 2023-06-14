@@ -8,7 +8,10 @@ export const createPost = async (req, res) => {
       textContent,
       imageContent,
       isCommentOf,
-      isShareOf
+      isShareOf,
+
+      canComment,
+      privatePost,
     } = req.body;
 
     const post = await createPostService(      
@@ -16,7 +19,10 @@ export const createPost = async (req, res) => {
       textContent,
       imageContent,
       isCommentOf,
-      isShareOf
+      isShareOf,
+
+      canComment,
+      privatePost,
     );
 
     res.send(post);
@@ -93,9 +99,9 @@ export const likePost = async (req, res) => {
     const post = await getPostByIdService(postId);
     if(!post) return res.status(404).send({message: "Postagem não encontrada!"});
 
-    const postLiked = await likePostService(userId, post.likes, postId);
+    const postLiked = await likePostService(userId, postId);
     if(!postLiked) {
-      await deleteLikePostService(userId, post.likes, postId);
+      await deleteLikePostService(userId, postId);
       return res.send({message: "Like removido com sucesso!"});
     }
     

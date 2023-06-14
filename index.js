@@ -1,6 +1,7 @@
 import { connectDatabase } from "./src/database/database.js";
 import express from "express";
 import dotenv from "dotenv";
+import cors from 'cors';
 
 import authRoute from "./src/routes/auth.route.js";
 import userRoute from "./src/routes/user.route.js";
@@ -12,6 +13,7 @@ const port = process.env.PORT || 1234;
 dotenv.config();
 connectDatabase();
 
+app.use(cors());
 app.use(express.json());
 app.use("/login", authRoute);
 app.use("/user", userRoute);
