@@ -60,7 +60,8 @@ export const deletePost = async (req, res) => {
 
 export const getAllPosts = async (req, res) => {
   try {
-    const posts = await getAllPostsService();
+    const userId = req.userId;
+    const posts = await getAllPostsService(userId);
 
     res.send(posts)
   } catch (error) {
@@ -70,7 +71,8 @@ export const getAllPosts = async (req, res) => {
 
 export const getTrendingPosts = async (req, res) => {
   try {
-    const posts = await getTrendingPostsService();
+    const userId = req.userId;
+    const posts = await getTrendingPostsService(userId);
 
     res.send(posts)
   } catch (error) {

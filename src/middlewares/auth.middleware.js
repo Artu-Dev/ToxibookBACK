@@ -30,3 +30,28 @@ export const authMiddleware = async (req, res, next) => {
   }
 } 
 
+export const checkLogin = async (req, res, next) => {
+  try {
+    const { authorization } = req.headers;
+    if(!authorization) return next();
+
+    const parts = authorization.split(" ");
+    const [schema, token] = parts;
+
+    if(schema !== "Bearer" || parts.length !== 2) return next();
+
+    jwt.verify(token, process.env.SECRET_JWT, async(error, decoded) => {
+      if(error) return next();
+
+      const user = await getUserByIdService(decoded.id);
+      if(!user) return next();
+
+      req.userId = decoded.id;
+
+      return next();
+    })
+
+  } catch (error) {
+    res.status(500).send({message: error.message});
+  }
+}

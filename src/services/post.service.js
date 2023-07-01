@@ -53,41 +53,52 @@ export const createPostService = async (
   );
 };
 
-export const getTrendingPostsService = () => Post.find()
-.sort({totalLikes: -1})  
-.populate({
-  path: "user",
-  select: "username profileImg tag"
-})
-.populate({ 
-  path: "isCommentOf",
-  strictPopulate: false,
-  select: "user",
-  populate: {
-    path: "user",
-    select: "tag"
-  }
-})
-.populate({ 
-  path: "isShareOf",
-  strictPopulate: false,
-  select: "user textContent imageContent createdAt",
-  populate: {
-    path: "user",
-    select: "username tag profileImg"
-  }
-})
-.populate({ 
-  path: "permissions",
-  select: "canComment privatePost"
-});
+export const getTrendingPostsService = async (userId) => {
+  const posts = await Post.find()
+    .sort({totalLikes: -1})  
+    .populate({
+      path: "user",
+      select: "username profileImg tag"
+    })
+    .populate({ 
+      path: "isCommentOf",
+      strictPopulate: false,
+      select: "user",
+      populate: {
+        path: "user",
+        select: "tag"
+      }
+    })
+    .populate({ 
+      path: "isShareOf",
+      strictPopulate: false,
+      select: "user textContent imageContent createdAt",
+      populate: {
+        path: "user",
+        select: "username tag profileImg"
+      }
+    })
+    .populate({ 
+      path: "permissions",
+      select: "canComment privatePost"
+  });
+  const likedPostsIds = await Post.find({likesList: userId,}, {_id: 1}).lean();
 
-export const getAllPostsService = () => Post.find()
-  .sort({_id: -1})  
-  .populate({
-    path: "user",
-    select: "username profileImg tag"
-});
+  return {likedPostsIds, posts}
+}
+
+export const getAllPostsService = async (userId) => {
+  const posts = await Post.find()
+    .sort({_id: -1})  
+    .populate({
+      path: "user",
+      select: "username profileImg tag"
+  });
+  
+  const likedPostsIds = await Post.find({likesList: userId,}, {_id: 1}).lean();
+
+  return {likedPostsIds, posts}
+}
 
 export const getPostByIdService = (id) => Post.findById(id)  
   .populate({
