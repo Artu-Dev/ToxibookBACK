@@ -58,7 +58,7 @@ export const getTrendingPostsService = async (userId) => {
     .sort({totalLikes: -1})  
     .populate({
       path: "user",
-      select: "username profileImg tag"
+      select: "username profileImg tag verified"
     })
     .populate({ 
       path: "isCommentOf",
@@ -75,7 +75,7 @@ export const getTrendingPostsService = async (userId) => {
       select: "user textContent imageContent createdAt",
       populate: {
         path: "user",
-        select: "username tag profileImg"
+        select: "username tag profileImg verified"
       }
     })
     .populate({ 
@@ -92,7 +92,7 @@ export const getAllPostsService = async (userId) => {
     .sort({_id: -1})  
     .populate({
       path: "user",
-      select: "username profileImg tag"
+      select: "username profileImg tag verified"
   });
   
   const likedPostsIds = await Post.find({likesList: userId,}, {_id: 1}).lean();
@@ -103,7 +103,7 @@ export const getAllPostsService = async (userId) => {
 export const getPostByIdService = (id) => Post.findById(id)  
   .populate({
     path: "user",
-    select: "username profileImg tag"
+    select: "username profileImg tag verified"
   })
   .populate({ 
     path: "comments",
@@ -125,7 +125,7 @@ export const getPostByIdService = (id) => Post.findById(id)
     select: "user textContent imageContent createdAt",
     populate: {
       path: "user",
-      select: "username tag profileImg"
+      select: "username tag profileImg verified"
     }
   })
   .populate({ 
@@ -138,7 +138,7 @@ export const updatePostService = (id, textContent) => Post.findByIdAndUpdate(id,
   { new: true })
   .populate({
     path: "user",
-    select: "username profileImg tag"
+    select: "username profileImg tag verified"
   })
   .populate({
     path: "likes",
