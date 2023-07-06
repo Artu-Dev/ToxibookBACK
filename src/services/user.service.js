@@ -31,7 +31,9 @@ export const deleteUserService = async (id) => {
 export const getAllUsersService = () => User.findAll();
 
 export const getUserByIdService = (id) => User.findById(id)
-  .populate("followInfo"); 
+  .populate("followInfo").select("+posts"); 
+  
+export const getUserDatasByIdService = (id) => User.findById(id); 
 
 export const getUserByTermService = (term) => User.find({
     $or: [

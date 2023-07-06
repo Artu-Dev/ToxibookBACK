@@ -48,6 +48,8 @@ const userSchema = new mongoose.Schema({
     ref: "follow"
   },
   posts: {
+    type: Array,
+    select: false
   },
   totalPosts: {
   },

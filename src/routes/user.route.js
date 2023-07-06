@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {createUser, deleteUser, findAllUsers, findUserById, findUserByName, followUser, updateUser} from "../controllers/user.controller.js";
+import {checkIsLoggedIn, createUser, deleteUser, findAllUsers, findUserById, findUserByName, followUser, updateUser} from "../controllers/user.controller.js";
 import { isYourProfile, validUserCreateDatas } from "../middlewares/user.middleware.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { validId } from "../middlewares/global.middleware.js";
@@ -7,6 +7,7 @@ const router = Router();
 
 router.post("/", validUserCreateDatas, createUser);
 router.get("/", findAllUsers);
+router.get("/isLogged", authMiddleware, checkIsLoggedIn);
 router.get("/:id", validId, findUserById);
 router.get("/search/:username", findUserByName);
 

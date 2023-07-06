@@ -35,7 +35,7 @@ const PostSchema = new mongoose.Schema({
     default: 0
   },
   totalComments: {
-    type: Number,
+    type: Number, 
     default: 0
   },
   totalShares: {

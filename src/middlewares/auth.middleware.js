@@ -1,13 +1,13 @@
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { getUserByIdService } from "../services/user.service.js";
+import { getUserByIdService, getUserDatasByIdService } from "../services/user.service.js";
 
 dotenv.config();
 
 export const authMiddleware = async (req, res, next) => {
   try {
     const { authorization } = req.headers;
-    if(!authorization) return res.sendStatus(401);
+    if(!authorization) return res.status(401).send("Authorization não encontrado!");
 
     const parts = authorization.split(" ");
     const [schema, token] = parts;
@@ -17,11 +17,10 @@ export const authMiddleware = async (req, res, next) => {
     jwt.verify(token, process.env.SECRET_JWT, async(error, decoded) => {
       if(error) return res.status(401).send({message: "Token invalido"});
 
-      const user = await getUserByIdService(decoded.id);
+      const user = await getUserDatasByIdService(decoded.id);
       if(!user) return res.status(401).send({message: "Usuario nao encontrado"});
 
       req.userId = decoded.id;
-
       return next();
     })
 

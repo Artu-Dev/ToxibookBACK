@@ -1,4 +1,4 @@
-import { createUserService, deleteUserService, followUserService, getAllUsersService, getUserByIdService, getUserByTermService, unfollowUserService, updateUserService } from "../services/user.service.js";
+import { createUserService, deleteUserService, followUserService, getAllUsersService, getUserByIdService, getUserByTermService, getUserDatasByIdService, unfollowUserService, updateUserService } from "../services/user.service.js";
 
 export const createUser = async (req, res) => {
   try {
@@ -92,6 +92,20 @@ export const followUser = async (req, res) => {
     return res.send({message: "seguiu usuario com sucesso!"})
   } catch (error) {
     return resMessage(res, 500, error.message);
+  }
+}
+
+export const checkIsLoggedIn = async (req, res) => {
+  try {
+    const id = req.userId;
+    if(!id) return resMessage(res, 400, "ID invalido :(");
+
+    const user = await getUserDatasByIdService(id);
+    if(!user) return resMessage(res, 404, "Nenhum usuario com esse ID encontrado");
+
+    res.send(user);
+  } catch (error) {
+    resMessage(res, 500, error.message);
   }
 }
 
