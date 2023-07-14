@@ -105,7 +105,7 @@ export const likePost = async (req, res) => {
     const postLiked = await likePostService(userId, postId);
     if(!postLiked) {
       await deleteLikePostService(userId, postId);
-      return res.send({message: "Like removido com sucesso!", totalLikes: post.totalLikes});
+      return res.send({message: "Like removido com sucesso!", totalLikes: post.totalLikes-1});
     }
     
     return res.send({message: "Like adicionado com sucesso!", totalLikes: post.totalLikes})
