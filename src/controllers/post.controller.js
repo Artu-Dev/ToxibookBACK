@@ -99,15 +99,16 @@ export const likePost = async (req, res) => {
     const userId = req.userId;
 
     const post = await getPostByIdService(postId);
+    // const post = await getLikesService(postId); TESTAR
     if(!post) return res.status(404).send({message: "Postagem não encontrada!"});
 
     const postLiked = await likePostService(userId, postId);
     if(!postLiked) {
       await deleteLikePostService(userId, postId);
-      return res.send({message: "Like removido com sucesso!"});
+      return res.send({message: "Like removido com sucesso!", totalLikes: post.totalLikes});
     }
     
-    return res.send({message: "Like adicionado com sucesso!"})
+    return res.send({message: "Like adicionado com sucesso!", totalLikes: post.totalLikes})
   } catch (error) {
     res.status(500).send({message: error.message});
   }
@@ -122,7 +123,7 @@ export const getLikeDetails = async (req, res) => {
 
     const totalLikes = await getLikesService(postId); 
     
-    res.send(totalLikes);
+    res.send(likesDetails);
   } catch (error) {
     res.status(500).send({message: error.message});
   }
