@@ -171,6 +171,8 @@ export const likePostService = async (userId, postId) => Post.findOneAndUpdate(
     }
 );
 
+export const getLikesService = (postId) => Post.findById(postId).select("totalLikes -_id"); // falta TESTAR
+
 export const deleteLikePostService = async (userId, postId) => Post.findByIdAndUpdate(postId,
   {
     $pull: { likesList: userId },

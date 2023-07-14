@@ -1,4 +1,4 @@
-import { likePostService, createPostService, deletePostService, getAllPostsService, getPostByIdService, updatePostService, deleteLikePostService, getTrendingPostsService, getLikeDetailsService } from "../services/post.service.js";
+import { likePostService, createPostService, deletePostService, getAllPostsService, getPostByIdService, updatePostService, deleteLikePostService, getTrendingPostsService, getLikeDetailsService, getLikesService } from "../services/post.service.js";
 
 
 export const createPost = async (req, res) => {
@@ -120,7 +120,9 @@ export const getLikeDetails = async (req, res) => {
     const likesDetails = await getLikeDetailsService(postId);
     if(!likesDetails || likesDetails.length === 0) return res.status(404).send({message: "Postagem não encontrada!"});
 
-    res.send(likesDetails);
+    const totalLikes = await getLikesService(postId); 
+    
+    res.send(totalLikes);
   } catch (error) {
     res.status(500).send({message: error.message});
   }
