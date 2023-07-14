@@ -50,7 +50,33 @@ export const createPostService = async (
   return Post.findByIdAndUpdate(post._id, 
     {permissions},
     {new: true}
-  );
+  )
+  .populate({
+    path: "user",
+    select: "username profileImg tag verified"
+  })
+  .populate({ 
+    path: "isCommentOf",
+    strictPopulate: false,
+    select: "user",
+    populate: {
+      path: "user",
+      select: "tag"
+    }
+  })
+  .populate({ 
+    path: "isShareOf",
+    strictPopulate: false,
+    select: "user textContent imageContent createdAt",
+    populate: {
+      path: "user",
+      select: "username tag profileImg verified"
+    }
+  })
+  .populate({ 
+    path: "permissions",
+    select: "canComment privatePost"
+  });
 };
 
 export const getTrendingPostsService = async (userId) => {

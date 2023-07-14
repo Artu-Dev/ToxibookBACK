@@ -2,8 +2,8 @@ import { createUserService, deleteUserService, followUserService, getAllUsersSer
 
 export const createUser = async (req, res) => {
   try {
-    const { username, email, password, bio, tag} = req.body;
-    const user = await createUserService(username, email, password, bio, tag);
+    const { username, email, password, bio, tag, profileImg, bannerImg} = req.body;
+    const user = await createUserService(username, email, password, bio, tag, profileImg, bannerImg);
 
     res.send(user);
   } catch (error) {
