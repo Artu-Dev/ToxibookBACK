@@ -98,17 +98,17 @@ export const likePost = async (req, res) => {
     const postId = req.params.id;
     const userId = req.userId;
 
-    const post = await getPostByIdService(postId);
-    // const post = await getLikesService(postId); TESTAR
+    // const post = await getPostByIdService(postId);
+    const post = await getLikesService(postId); //TESTAR
     if(!post) return res.status(404).send({message: "Postagem não encontrada!"});
 
     const postLiked = await likePostService(userId, postId);
     if(!postLiked) {
       await deleteLikePostService(userId, postId);
-      return res.send({message: "Like removido com sucesso!", totalLikes: post.totalLikes-1});
+      return res.send({message: "Like removido com sucesso!", totalLikes: post});
     }
     
-    return res.send({message: "Like adicionado com sucesso!", totalLikes: post.totalLikes})
+    return res.send({message: "Like adicionado com sucesso!", totalLikes: post})
   } catch (error) {
     res.status(500).send({message: error.message});
   }
