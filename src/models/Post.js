@@ -23,12 +23,14 @@ const PostSchema = new mongoose.Schema({
   },
   likesList: {
     type: Array,
+    select: false
   },
   comments: {
     type: Array
   },
   sharesList: {
-    type: Array
+    type: Array,
+    select: false
   },
   totalLikes: {
     type: Number,
