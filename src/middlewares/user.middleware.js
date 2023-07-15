@@ -1,8 +1,22 @@
+import mongoose from "mongoose";
 import { getUserByIdService } from "../services/user.service.js";
 
 export const validUserCreateDatas = async (req, res, next) => {
   const { username, email, password } = req.body;
   if(!username || !email || !password) return resMessage(res, 400, "Preencha todos os campos corretamente");
+
+  next();
+}
+
+export const validUserId = async (req, res, next) => {
+  const { id } = req.params ;
+  if(!id) return resMessage(res, 401, "Insira o ID do usuario!");
+
+  const isValid = mongoose.isValidObjectId(id);
+  if(!isValid) return resMessage(res, 401, "ID de usuario invalido");
+
+  const user = await getUserByIdService(id);
+  if(!user) return resMessage(res, 404, "Usuario não encontrado");
 
   next();
 }

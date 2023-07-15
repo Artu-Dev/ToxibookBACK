@@ -159,6 +159,39 @@ export const getPostByIdService = (id) => Post.findById(id)
     select: "canComment privatePost"
 });
 
+export const getPostsByUserService = (userID) => Post.find({user: userID})  
+  .populate({
+    path: "user",
+    select: "username profileImg tag verified"
+  })
+  .populate({ 
+    path: "comments",
+    strictPopulate: false,
+    select: "user textContent imageContent"
+  })
+  .populate({ 
+    path: "isCommentOf",
+    strictPopulate: false,
+    select: "user",
+    populate: {
+      path: "user",
+      select: "tag"
+    }
+  })
+  .populate({ 
+    path: "isShareOf",
+    strictPopulate: false,
+    select: "user textContent imageContent createdAt",
+    populate: {
+      path: "user",
+      select: "username tag profileImg verified"
+    }
+  })
+  .populate({ 
+    path: "permissions",
+    select: "canComment privatePost"
+});
+
 export const updatePostService = (id, textContent) => Post.findByIdAndUpdate(id, 
   { textContent, editedAt: Date.now() },
   { new: true })

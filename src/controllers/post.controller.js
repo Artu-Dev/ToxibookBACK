@@ -93,13 +93,25 @@ export const getPostById = async (req, res) => {
   }
 }
 
+export const getPostsByUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const posts = await getPostByIdService(id);
+    if(!posts) return res.status(404).send({message: "Nenhum post desse usuario encontrado"});
+
+    res.send(posts);
+  } catch (error) {
+    res.status(500).send({message: error.message});
+  }
+}
+
 export const likePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.userId;
 
-    // const post = await getPostByIdService(postId);
-    const post = await getLikesService(postId); //TESTAR
+    const post = await getLikesService(postId);
     if(!post) return res.status(404).send({message: "Postagem não encontrada!"});
 
     const postLiked = await likePostService(userId, postId);
