@@ -159,7 +159,7 @@ export const getPostByIdService = (id) => Post.findById(id)
     select: "canComment privatePost"
 });
 
-export const getPostsByUserService = (userID) => Post.find({user: userID})  
+export const getPostsByUserService = (userID) => Post.find({user: userID}, {_id: 1})  
   .populate({
     path: "user",
     select: "username profileImg tag verified"

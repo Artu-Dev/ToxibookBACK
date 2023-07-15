@@ -1,4 +1,4 @@
-import { likePostService, createPostService, deletePostService, getAllPostsService, getPostByIdService, updatePostService, deleteLikePostService, getTrendingPostsService, getLikeDetailsService, getLikesService } from "../services/post.service.js";
+import { likePostService, createPostService, deletePostService, getAllPostsService, getPostByIdService, updatePostService, deleteLikePostService, getTrendingPostsService, getLikeDetailsService, getLikesService, getPostsByUserService } from "../services/post.service.js";
 
 
 export const createPost = async (req, res) => {
@@ -97,7 +97,7 @@ export const getPostsByUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const posts = await getPostByIdService(id);
+    const posts = await getPostsByUserService(id);
     if(!posts) return res.status(404).send({message: "Nenhum post desse usuario encontrado"});
 
     res.send(posts);
