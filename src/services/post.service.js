@@ -160,6 +160,7 @@ export const getPostByIdService = (id) => Post.findById(id)
 });
 
 export const getPostsByUserService = (userID) => Post.find({user: userID})  
+.sort({_id: -1})  
 .populate({
   path: "user",
   select: "username profileImg tag verified"
