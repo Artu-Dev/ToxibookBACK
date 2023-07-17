@@ -158,9 +158,9 @@ export const getPostByIdService = async (id, userId) => {
   .populate({ 
     path: "permissions",
     select: "canComment privatePost"
-  });
+  })
 
-  const isLiked = await Post.find({_id: id, likesList: userId,}, {_id: 1}).lean();
+  const isLiked = await Post.find({_id: id, likesList: {$in: userId },});
 
   return {isLiked, post} 
 };
