@@ -1,6 +1,7 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 import PostPerms from "../models/PostPerms.js";
+import mongoose from "mongoose";
 
 
 export const createPostService = async (
@@ -160,7 +161,7 @@ export const getPostByIdService = async (id, userId) => {
     select: "canComment privatePost"
   })
 
-  const isLiked = await Post.find({_id: id, likesList: {$in: [userId] },});
+  const isLiked = await Post.find({likesList: userId, _id: id})
 
   return {isLiked, post} 
 };
