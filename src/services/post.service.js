@@ -160,7 +160,7 @@ export const getPostByIdService = async (id, userId) => {
     select: "canComment privatePost"
   })
 
-  const isLiked = await Post.find({_id: id, likesList: {$in: userId },});
+  const isLiked = await Post.find({_id: id, likesList: {$in: [userId] },});
 
   return {isLiked, post} 
 };
