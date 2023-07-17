@@ -126,7 +126,8 @@ export const getAllPostsService = async (userId) => {
   return {likedPostsIds, posts}
 }
 
-export const getPostByIdService = (id) => Post.findById(id)  
+export const getPostByIdService = async (id, userId) => {
+  const post = await Post.findById(id)  
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -157,7 +158,12 @@ export const getPostByIdService = (id) => Post.findById(id)
   .populate({ 
     path: "permissions",
     select: "canComment privatePost"
-});
+  });
+
+  const isLiked = await Post.find({_id: id, likesList: userId,}, {_id: 1}).lean();
+
+  return {isLiked, post} 
+};
 
 export const getPostsByUserService = (userID) => Post.find({user: userID})  
 .sort({_id: -1})  

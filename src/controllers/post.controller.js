@@ -83,8 +83,9 @@ export const getTrendingPosts = async (req, res) => {
 export const getPostById = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.userId; 
 
-    const post = await getPostByIdService(id);
+    const post = await getPostByIdService(id, userId);
     if(!post) return res.status(404).send({message: "Nenhum post com este ID encontrado"});
 
     res.send(post)
