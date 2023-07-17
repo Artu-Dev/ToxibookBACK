@@ -110,8 +110,13 @@ export const getTrendingPostsService = async (userId) => {
       select: "canComment privatePost"
   });
   const likedPostsIds = await Post.find({likesList: userId,}, {_id: 1}).lean();
+  const isYourPost = await Post.find({user: userId,}, {_id: 1}).lean();
 
-  return {likedPostsIds, posts}
+  return {
+    likedPostsIds,
+    isYourPost,
+    posts
+  }
 }
 
 export const getAllPostsService = async (userId) => {
