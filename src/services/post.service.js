@@ -131,8 +131,8 @@ export const getTrendingPostsService = async (userId) => {
 
 export const getAllPostsService = async (userId) => { 
   const postQuery = Post.find()
-  .sort({_id: -1});
-
+  .sort({_id: -1})  
+    
   const postsPromise = postQuery
   .populate({
     path: "user",
