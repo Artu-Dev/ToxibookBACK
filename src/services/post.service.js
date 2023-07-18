@@ -215,7 +215,7 @@ export const getPostByIdService = async (id, userId) => {
 
   const isLikedQuery = Post.find({likesList: userId, _id: id}, {_id: 1}).lean();
 
-  const [post, isLiked] = await postQuery.Promise.all([postQuery, isLikedQuery])
+  const [post, isLiked] = await Promise.all([postQuery, isLikedQuery])
 
   return {isLiked, post} 
 };
