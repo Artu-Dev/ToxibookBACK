@@ -129,21 +129,57 @@ export const getTrendingPostsService = async (userId) => {
   }
 }
 
-export const getAllPostsService = async (userId) => {
-  const posts = await Post.find()
-    .sort({_id: -1})  
-    .populate({
-      path: "user",
-      select: "username profileImg tag verified"
-  });
-  
-  const likedPostsIds = await Post.find({likesList: userId,}, {_id: 1}).lean();
+export const getAllPostsService = async (userId) => { 
+  const postQuery = Post.find()
+  .sort({_id: -1});
 
-  return {likedPostsIds, posts}
+  const postsPromise = postQuery
+  .populate({
+    path: "user",
+    select: "username profileImg tag verified"
+  })
+  .populate({ 
+    path: "isCommentOf",
+    strictPopulate: false,
+    select: "user",
+    populate: {
+      path: "user",
+      select: "tag"
+    }
+  })
+  .populate({ 
+    path: "isShareOf",
+    strictPopulate: false,
+    select: "user textContent imageContent createdAt",
+    populate: {
+      path: "user",
+      select: "username tag profileImg verified"
+    }
+  })
+  .populate({ 
+    path: "permissions",
+    select: "canComment privatePost"
+  })
+  .limit(10);
+
+  const likedPostsIdsPromise = Post.find({likesList: userId,}, {_id: 1}).lean();
+  const isYourPostPromise = Post.find({user: userId,}, {_id: 1}).lean();
+
+  const [posts, likedPostsIds, isYourPost] = await Promise.all([
+    postsPromise,
+    likedPostsIdsPromise,
+    isYourPostPromise,
+  ]);
+
+  return {
+    likedPostsIds,
+    isYourPost,
+    posts
+  }
 }
 
 export const getPostByIdService = async (id, userId) => {
-  const post = await Post.findById(id)  
+  const postQuery = Post.findById(id)  
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -175,8 +211,11 @@ export const getPostByIdService = async (id, userId) => {
     path: "permissions",
     select: "canComment privatePost"
   })
+  .limit(10);
 
-  const isLiked = await Post.find({likesList: userId, _id: id})
+  const isLikedQuery = Post.find({likesList: userId, _id: id}, {_id: 1}).lean();
+
+  const [post, isLiked] = await postQuery.Promise.all([postQuery, isLikedQuery])
 
   return {isLiked, post} 
 };
