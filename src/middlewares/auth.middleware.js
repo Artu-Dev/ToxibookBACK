@@ -18,7 +18,7 @@ export const authMiddleware = async (req, res, next) => {
       if(error) return res.status(401).send({message: "Token invalido"});
 
       const user = await getUserDatasByIdService(decoded.id);
-      if(!user) return res.status(401).send({message: "Usuario nao encontrado"});
+      if(!user) return res.status(404).send({message: "Usuario nao encontrado"});
 
       req.userId = decoded.id;
       return next();

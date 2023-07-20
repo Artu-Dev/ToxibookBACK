@@ -3,7 +3,7 @@ import { getUserByIdService } from "../services/user.service.js";
 
 export const validId = (req, res, next) => {
   const { id } = req.params;
-  if(!id) return resMessage(res, 401, "Nao foi encontrado nenhum ID");
+  if(!id) return resMessage(res, 400, "Nao foi encontrado nenhum ID");
   
   const isValid = mongoose.isValidObjectId(id);
   if(!isValid) return resMessage(res, 401, "ID invalido");

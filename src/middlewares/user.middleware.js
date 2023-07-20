@@ -10,7 +10,7 @@ export const validUserCreateDatas = async (req, res, next) => {
 
 export const validUserId = async (req, res, next) => {
   const { id } = req.params ;
-  if(!id) return resMessage(res, 401, "Insira o ID do usuario!");
+  if(!id) return resMessage(res, 400, "Insira o ID do usuario!");
 
   const isValid = mongoose.isValidObjectId(id);
   if(!isValid) return resMessage(res, 401, "ID de usuario invalido");

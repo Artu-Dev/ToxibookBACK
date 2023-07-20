@@ -1,7 +1,6 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 import PostPerms from "../models/PostPerms.js";
-import mongoose from "mongoose";
 
 
 export const createPostService = async (
