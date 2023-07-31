@@ -1,6 +1,9 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 import PostPerms from "../models/PostPerms.js";
+import aws from "aws-sdk";
+
+const s3 = new aws.S3();
 
 
 export const createPostService = async (
@@ -9,7 +12,7 @@ export const createPostService = async (
   imageContent,
   isCommentOf,
   isShareOf,
-
+  ImageKey,
   canComment = true,
   privatePost = false,
 ) => {
@@ -17,6 +20,7 @@ export const createPostService = async (
     user: userId,
     textContent,
     imageContent,
+    ImageKey,
     isCommentOf,
     isShareOf,
   });
@@ -261,19 +265,21 @@ export const updatePostService = (id, textContent) => Post.findByIdAndUpdate(id,
 });
 
 export const deletePostService = async (id, userId) => {
-  const deletedPost = await Post.findByIdAndDelete(id);
-  if (deletedPost.isShareOf) {
-    await Post.findByIdAndUpdate(deletedPost.isShareOf, {
-      $inc: { totalShares: -1 }
-    });
-  };
-  if (deletedPost.isCommentOf) {
-    await Post.findByIdAndUpdate(deletedPost.isCommentOf, {
-      $inc: { totalComments: -1 }
-    });
-  };
+  const deletedPost = await Post.findById(id);
+  
+  // if (deletedPost.isShareOf) {
+  //   await Post.findByIdAndUpdate(deletedPost.isShareOf, {
+  //     $inc: { totalShares: -1 }
+  //   });
+  // };
+  // if (deletedPost.isCommentOf) {
+  //   await Post.findByIdAndUpdate(deletedPost.isCommentOf, {
+  //     $inc: { totalComments: -1 }
+  //   });
+  // };
 
-  await User.findByIdAndUpdate(userId, { $pull: { posts: deletedPost._id } });
+  // await User.findByIdAndUpdate(userId, { $pull: { posts: deletedPost._id } });
+  await Post.findOneAndDelete({_id: id});
 
   return deletedPost;
 };

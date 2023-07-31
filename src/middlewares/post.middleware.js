@@ -42,7 +42,7 @@ export const isYourPost = async (req, res, next) => {
     const userId = req.userId;
     const postId = req.params.id;
 
-    const post = await getPostByIdService(postId)
+    const {post} = await getPostByIdService(postId)
     if(!post) return res.status(404).send({message: "Postagem não encontrada!"});
 
     if(userId !== String(post.user._id) || !userId) return res.status(401).send({message: "Você não pode editar essa postagem!"});

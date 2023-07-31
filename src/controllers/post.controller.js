@@ -3,13 +3,15 @@ import { likePostService, createPostService, deletePostService, getAllPostsServi
 
 export const createPost = async (req, res) => {
   try {
+    // const {location: imageContent, key: ImageKey} = req.file;
+    const imageContent = req.file?.location;
+    const ImageKey = req.file?.key;
+    
     const userId = req.userId;
     const {
       textContent,
-      imageContent,
       isCommentOf,
       isShareOf,
-
       canComment,
       privatePost,
     } = req.body;
@@ -19,8 +21,8 @@ export const createPost = async (req, res) => {
       textContent,
       imageContent,
       isCommentOf,
-      isShareOf,
-
+      isShareOf, 
+      ImageKey,
       canComment,
       privatePost,
     );

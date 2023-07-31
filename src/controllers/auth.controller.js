@@ -12,11 +12,9 @@ export const login = async (req, res) => {
     const passwordIsValid = bcrypt.compareSync(password, user.password);
     if(!passwordIsValid) return res.status(400).send({message: "Usuario ou senha incorretos!"});
 
-    const userData = await getUserDatasByIdService(user.id);
-
     const token = generateToken(user._id);
 
-    res.send({token, userData});
+    res.send(token);
   } catch (error) {
     res.status(500).send({message: error.message})
   }
