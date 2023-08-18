@@ -5,7 +5,6 @@ import bcrypt from "bcryptjs";
 export const login = async (req, res) => {
   try {
     const {email, password} = req.body;
-
     const user = await loginService(email);
     if(!user) return res.status(400).send({message: "Usuario ou senha incorretos!"});
 
@@ -14,7 +13,7 @@ export const login = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    res.send(token);
+    res.send({token, user});
   } catch (error) {
     res.status(500).send({message: error.message})
   }

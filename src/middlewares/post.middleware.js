@@ -4,7 +4,9 @@ import Post from "../models/Post.js";
 
 export const validPost = async (req, res, next) => {
   try {
-    const { textContent, imageContent, isCommentOf, isShareOf } = req.body;
+    const imageContent = req.file?.location;
+    const { textContent, isCommentOf, isShareOf } = req.body;
+    console.log(textContent, imageContent, isCommentOf, isShareOf);
 
     const postIds = []
     if (isCommentOf) {
@@ -44,7 +46,7 @@ export const isYourPost = async (req, res, next) => {
 
     const {post} = await getPostByIdService(postId)
     if(!post) return res.status(404).send({message: "Postagem não encontrada!"});
-
+    
     if(userId !== String(post.user._id) || !userId) return res.status(401).send({message: "Você não pode editar essa postagem!"});
 
     next();
