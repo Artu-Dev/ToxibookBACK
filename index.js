@@ -17,7 +17,8 @@ const port = process.env.PORT || 1234;
 
 dotenv.config();
 connectDatabase();
-app.use("/files", express.static(path.resolve(__dirname, "..", "tmp", "upload")));
+
+app.use("/files", express.static(path.resolve(__dirname, "tmp", "uploads")));
 app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());

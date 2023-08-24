@@ -28,7 +28,13 @@ const userSchema = new mongoose.Schema({
   profileImg: {
     type: String,
   },
+  profileImgKey: {
+    type: String,
+  },
   bannerImg: {
+    type: String,
+  },
+  bannerImgKey: {
     type: String,
   },
   canComment: {

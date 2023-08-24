@@ -20,8 +20,8 @@ export const createUserService = async ( username, email, password, bio, tag, pr
   );
 };
 
-export const updateUserService = (id, bio, profileImg, bannerImg, username) => User.findByIdAndUpdate(id, {
-  bio, profileImg, bannerImg, username
+export const updateUserService = (id, bio, profileImg, profileImgKey, bannerImg, bannerImgKey, username) => User.findByIdAndUpdate(id, {
+  bio, profileImg, profileImgKey, bannerImg, bannerImgKey, username
 }, {new: true});
 
 export const deleteUserService = async (id) => {

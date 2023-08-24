@@ -1,10 +1,6 @@
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 import PostPerms from "../models/PostPerms.js";
-import aws from "aws-sdk";
-
-const s3 = new aws.S3();
-
 
 export const createPostService = async (
   userId,

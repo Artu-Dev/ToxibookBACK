@@ -15,7 +15,7 @@ storageTypes = {
 				file.key = `${hash.toString("hex")}-${file.originalname}`;
 				cb(null, file.key);
 			})
-		}
+		},
 	}),
 	s3: multerS3({
 		s3: new aws.S3(),

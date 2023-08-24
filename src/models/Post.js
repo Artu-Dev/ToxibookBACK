@@ -1,7 +1,13 @@
 import mongoose from "mongoose";
 import aws from "aws-sdk";
 import User from "./User.js";
+import fs from "fs"
+import path from "path";
+import {promisify} from "util"
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const s3 = new aws.S3();
 
 const PostSchema = new mongoose.Schema({
@@ -64,6 +70,12 @@ const PostSchema = new mongoose.Schema({
   },
 });
 
+PostSchema.pre("save", function() {
+  if(!this.imageContent && this.ImageKey) {
+    this.imageContent = `${process.env.APP_URL}/files/${this.ImageKey}`
+  }
+});
+
 PostSchema.pre("findOneAndDelete", async function(next) {
   try {
     const id = this.getQuery()["_id"];
@@ -91,10 +103,12 @@ PostSchema.pre("findOneAndDelete", async function(next) {
       if (process.env.STORAGE_TYPE === "s3") {
         await s3.deleteObject({
           Bucket: process.env.AWS_BUCKET_NAME,
-          Key: doc.ImageKey,
+          Key: ImageKey,
         }).promise();
       } else {
-        // Add any handling for other storage types if needed
+        return promisify(fs.unlink)(
+          path.resolve(__dirname, "..", "..", "tmp", "uploads", ImageKey)
+        );
       }
     }
 

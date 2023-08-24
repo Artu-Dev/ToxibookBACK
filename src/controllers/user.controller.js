@@ -1,4 +1,5 @@
 import { createUserService, deleteUserService, followUserService, getAllUsersService, getUserByIdService, getUserByTermService, getUserDatasByIdService, unfollowUserService, updateUserService } from "../services/user.service.js";
+import deleteImage from "../util/deleteImage.js";
 
 export const createUser = async (req, res) => {
   try {
@@ -14,10 +15,31 @@ export const createUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const id = req.userId;
-    const { bio, profileImg, bannerImg, username } = req.body;
-    if(!bio || !profileImg || !bannerImg || !username) resMessage(res, 400, "Preencha todos os campos corretamente");
+    const {files} = req;
+    const {profileImgKey: oldProfileImgKey, bannerImgKey: oldBannerImgKey} = await getUserByIdService(id);
 
-    const updatedUser = await updateUserService(id, bio, profileImg, bannerImg, username);
+    // const profileImg = files?.profileImg?.[0]?.location;
+    // const profileImgKey = files?.profileImg?.[0]?.key;
+    // const bannerImg = files?.bannerImg?.[0]?.location;
+    // const bannerImgKey = files?.bannerImg?.[0]?.key;
+    const bannerImgKey = files.bannerImg?.[0]?.filename;
+    const profileImgKey = files.profileImg?.[0]?.filename; 
+    let bannerImg;
+    let profileImg; 
+    if(profileImgKey) profileImg = `${process.env.APP_URL}/files/${profileImgKey}`;
+    if(bannerImgKey) bannerImg = `${process.env.APP_URL}/files/${bannerImgKey}`;
+
+    const { bio, username } = req.body;
+    if(!bio && !profileImg && !bannerImg && !username) return resMessage(res, 400, "Preencha todos os campos corretamente");
+    
+    if (profileImgKey) {
+      deleteImage(oldProfileImgKey);
+    } 
+    if (bannerImgKey) {
+      deleteImage(oldBannerImgKey);
+    }
+
+    const updatedUser = await updateUserService(id, bio, profileImg, profileImgKey, bannerImg, bannerImgKey, username);
 
     res.send(updatedUser);
   } catch (error) {
