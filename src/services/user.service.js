@@ -22,7 +22,7 @@ export const createUserService = async ( username, email, password, bio, tag, pr
 
 export const updateUserService = (id, bio, profileImg, profileImgKey, bannerImg, bannerImgKey, username) => User.findByIdAndUpdate(id, {
   bio, profileImg, profileImgKey, bannerImg, bannerImgKey, username
-}, {new: true});
+}, {new: true}).populate("followInfo");
 
 export const deleteUserService = async (id) => {
   await Follow.findOneAndDelete({user: id});
@@ -33,7 +33,7 @@ export const deleteUserService = async (id) => {
 export const getAllUsersService = () => User.findAll();
 
 export const getUserByIdService = (id) => User.findById(id)
-  .populate("followInfo").select("+posts"); 
+  .populate("followInfo"); 
   
 export const getUserDatasByIdService = (id) => User.findById(id); 
 

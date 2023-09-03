@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware, checkLogin } from "../middlewares/auth.middleware.js";
-import { createPost, deletePost, getAllPosts, getPostById, updatePost, likePost, getTrendingPosts, getLikeDetails, getPostsByUser, getReplysByUser } from "../controllers/post.controller.js";
+import { createPost, deletePost, getAllPosts, getPostById, updatePost, likePost, getTrendingPosts, getLikeDetails, getPostsByUser, getReplysByUser, getSearchPosts } from "../controllers/post.controller.js";
 import { validPost, isYourPost } from "../middlewares/post.middleware.js";
 import { UserActionsVerify, validId } from "../middlewares/global.middleware.js";
 import { validUserId } from "../middlewares/user.middleware.js";
@@ -12,6 +12,7 @@ const route = Router();
 route.post("/", multer(multerConfig).single("imageContent"),authMiddleware, validPost, UserActionsVerify, createPost);
 route.get("/", checkLogin, getAllPosts);
 route.get("/trending",checkLogin, getTrendingPosts);
+route.get("/search",checkLogin, getSearchPosts);
 route.get("/:id", validId, checkLogin, getPostById);
 
 route.patch("/like/:id", authMiddleware, validId, likePost)

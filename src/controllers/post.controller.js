@@ -1,4 +1,4 @@
-import { likePostService, createPostService, deletePostService, getAllPostsService, getPostByIdService, updatePostService, deleteLikePostService, getTrendingPostsService, getLikeDetailsService, getLikesService, getPostsByUserService, getReplysByUserService } from "../services/post.service.js";
+import { likePostService, createPostService, deletePostService, getAllPostsService, getPostByIdService, updatePostService, deleteLikePostService, getTrendingPostsService, getLikeDetailsService, getLikesService, getPostsByUserService, getReplysByUserService, getSearchPostsService } from "../services/post.service.js";
 
 
 export const createPost = async (req, res) => {
@@ -75,6 +75,21 @@ export const getTrendingPosts = async (req, res) => {
   try {
     const userId = req.userId;
     const posts = await getTrendingPostsService(userId);
+
+    res.send(posts)
+  } catch (error) {
+    res.status(500).send({message: error.message});
+  }
+}
+
+export const getSearchPosts = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const param = req.query.searchParam;
+    console.log(param);
+    if(!param) return res.status(400).send({message: "Insira um termo para pesquisar!"});
+
+    const posts = await getSearchPostsService(userId, param);
 
     res.send(posts)
   } catch (error) {
