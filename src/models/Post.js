@@ -59,7 +59,7 @@ const PostSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now()
+    default: Date.now
   },
   permissions: {
     type: mongoose.Types.ObjectId,
@@ -99,7 +99,7 @@ PostSchema.pre("findOneAndDelete", async function(next) {
     if (!updatedUser) throw new Error('Usuário não encontrado ao remover referência do post.');
     
 
-    if (imageContent || ImageKey) {
+    if (ImageKey) {
       if (process.env.STORAGE_TYPE === "s3") {
         await s3.deleteObject({
           Bucket: process.env.AWS_BUCKET_NAME,

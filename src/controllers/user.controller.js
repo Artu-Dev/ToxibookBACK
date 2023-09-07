@@ -18,16 +18,20 @@ export const updateUser = async (req, res) => {
     const {files} = req;
     const {profileImgKey: oldProfileImgKey, bannerImgKey: oldBannerImgKey} = await getUserByIdService(id);
 
-    // const profileImg = files?.profileImg?.[0]?.location;
-    // const profileImgKey = files?.profileImg?.[0]?.key;
-    // const bannerImg = files?.bannerImg?.[0]?.location;
-    // const bannerImgKey = files?.bannerImg?.[0]?.key;
-    const bannerImgKey = files.bannerImg?.[0]?.filename;
-    const profileImgKey = files.profileImg?.[0]?.filename; 
-    let bannerImg;
-    let profileImg; 
-    if(profileImgKey) profileImg = `${process.env.APP_URL}/files/${profileImgKey}`;
-    if(bannerImgKey) bannerImg = `${process.env.APP_URL}/files/${bannerImgKey}`;
+
+    let bannerImg, bannerImgKey;
+    let profileImg, profileImgKey; 
+    if(process.env.STORAGE_TYPE === "s3") {
+      profileImg = files?.profileImg?.[0]?.location;
+      profileImgKey = files?.profileImg?.[0]?.key;
+      bannerImg = files?.bannerImg?.[0]?.location;
+      bannerImgKey = files?.bannerImg?.[0]?.key;
+    } else {
+      bannerImgKey = files.bannerImg?.[0]?.filename;
+      profileImgKey = files.profileImg?.[0]?.filename; 
+      if(profileImgKey) profileImg = `${process.env.APP_URL}/files/${profileImgKey}`;
+      if(bannerImgKey) bannerImg = `${process.env.APP_URL}/files/${bannerImgKey}`;
+    } 
 
     const { bio, username } = req.body;
     if(!bio && !profileImg && !bannerImg && !username) return resMessage(res, 400, "Preencha todos os campos corretamente");

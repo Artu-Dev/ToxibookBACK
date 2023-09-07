@@ -3,7 +3,7 @@ import User from "../models/User.js";
 import PostPerms from "../models/PostPerms.js";
 
 export const createPostService = async (
-  userId,
+  user,
   textContent,
   imageContent,
   isCommentOf,
@@ -13,7 +13,7 @@ export const createPostService = async (
   privatePost = false,
 ) => {
   const post = await Post.create({
-    user: userId,
+    user,
     textContent,
     imageContent,
     ImageKey,
@@ -45,7 +45,7 @@ export const createPostService = async (
     );
   };
 
-  await User.findByIdAndUpdate(userId, { $push: { posts: post._id } });
+  await User.findByIdAndUpdate(user, { $push: { posts: post._id } });
 
   return Post.findByIdAndUpdate(post._id, 
     {permissions},
