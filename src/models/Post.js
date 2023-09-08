@@ -10,6 +10,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const s3 = new aws.S3();
 
+const PermsSchema = new mongoose.Schema({
+  canComment: {
+    type: Boolean,
+    default: true
+  },
+  privatePost: {
+    type: Boolean,
+    default: false
+  }
+})
+
 const PostSchema = new mongoose.Schema({
   user: {
     type: mongoose.Types.ObjectId,
@@ -38,13 +49,6 @@ const PostSchema = new mongoose.Schema({
     type: Array,
     select: false
   },
-  comments: {
-    type: Array
-  },
-  sharesList: {
-    type: Array,
-    select: false
-  },
   totalLikes: {
     type: Number,
     default: 0
@@ -62,8 +66,7 @@ const PostSchema = new mongoose.Schema({
     default: Date.now
   },
   permissions: {
-    type: mongoose.Types.ObjectId,
-    ref: "postPerms"
+    type: PermsSchema,
   },
   editedAt: {
     type: Date,
@@ -79,7 +82,7 @@ PostSchema.pre("save", function() {
 PostSchema.pre("findOneAndDelete", async function(next) {
   try {
     const id = this.getQuery()["_id"];
-    const {isShareOf, isCommentOf, imageContent, user, ImageKey} = await Post.findById(id);
+    const {isShareOf, isCommentOf, imageContent, ImageKey} = await Post.findById(id);
 
     if (isShareOf) {
       const sharePost = await Post.findByIdAndUpdate(isShareOf, {
@@ -94,10 +97,6 @@ PostSchema.pre("findOneAndDelete", async function(next) {
       });
       if (!commentPost) throw new Error('Post não encontrado ao atualizar total de comentários.');
     }
-
-    const updatedUser = await User.findByIdAndUpdate(user, { $pull: { posts: id } });
-    if (!updatedUser) throw new Error('Usuário não encontrado ao remover referência do post.');
-    
 
     if (ImageKey) {
       if (process.env.STORAGE_TYPE === "s3") {

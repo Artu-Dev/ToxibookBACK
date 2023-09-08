@@ -1,4 +1,4 @@
-import { likePostService, createPostService, deletePostService, getAllPostsService, getPostByIdService, updatePostService, deleteLikePostService, getTrendingPostsService, getLikeDetailsService, getLikesService, getPostsByUserService, getReplysByUserService, getSearchPostsService } from "../services/post.service.js";
+import { likePostService, createPostService, deletePostService, getAllPostsService, getPostByIdService, updatePostService, getTrendingPostsService, getLikeDetailsService, getLikesService, getPostsByUserService, getReplysByUserService, getSearchPostsService, getCommentsService, getPostsLikedByUserService } from "../services/post.service.js";
 
 
 export const createPost = async (req, res) => {
@@ -82,6 +82,18 @@ export const getTrendingPosts = async (req, res) => {
   }
 }
 
+export const getComments = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const {id} = req.params;
+    const posts = await getCommentsService(userId, id);
+
+    res.send(posts)
+  } catch (error) {
+    res.status(500).send({message: error.message});
+  }
+}
+
 export const getSearchPosts = async (req, res) => {
   try {
     const userId = req.userId;
@@ -137,6 +149,19 @@ export const getReplysByUser = async (req, res) => {
   }
 }
 
+export const getPostsLikedByUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const posts = await getPostsLikedByUserService(id);
+    if(!posts) return res.status(404).send({message: "O usuario não curtiu nenhuma postagem"});
+
+    res.send(posts);
+  } catch (error) {
+    res.status(500).send({message: error.message});
+  }
+}
+
 export const likePost = async (req, res) => {
   try {
     const postId = req.params.id;
@@ -145,13 +170,9 @@ export const likePost = async (req, res) => {
     const post = await getLikesService(postId);
     if(!post) return res.status(404).send({message: "Postagem não encontrada!"});
 
-    const postLiked = await likePostService(userId, postId);
-    if(!postLiked) {
-      await deleteLikePostService(userId, postId);
-      return res.send({message: "Like removido com sucesso!", totalLikes: post.totalLikes-1});
-    }
+    const totalLikes = await likePostService(userId, postId);
     
-    return res.send({message: "Like adicionado com sucesso!", totalLikes: post.totalLikes+1})
+    return res.send({message: "sucesso!", totalLikes})
   } catch (error) {
     res.status(500).send({message: error.message});
   }

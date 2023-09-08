@@ -53,10 +53,6 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: "follow"
   },
-  posts: {
-    type: Array,
-    select: false
-  },
   totalPosts: {
   },
   likes: {

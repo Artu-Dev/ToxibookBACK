@@ -1,6 +1,5 @@
 import Post from "../models/Post.js";
-import User from "../models/User.js";
-import PostPerms from "../models/PostPerms.js";
+import Like from "../models/Like.js";
 
 export const createPostService = async (
   user,
@@ -12,26 +11,24 @@ export const createPostService = async (
   canComment = true,
   privatePost = false,
 ) => {
-  const post = await Post.create({
+  const postCreated = await Post.create({
     user,
     textContent,
     imageContent,
     ImageKey,
     isCommentOf,
     isShareOf,
-  });
-
-  const permissions = await PostPerms.create({
-    post: post._id,
-    canComment,
-    privatePost,
+    permissions: {
+      canComment,
+      privatePost
+    }
   });
 
   if(isShareOf) {
     await Post.findByIdAndUpdate(isShareOf, 
       { 
         $inc: { totalShares: 1 },
-        $push: { sharesList: post._id }
+        $push: { sharesList: postCreated._id }
       }
     );
   };
@@ -40,17 +37,12 @@ export const createPostService = async (
     await Post.findByIdAndUpdate(isCommentOf, 
       { 
         $inc: { totalComments: 1 },
-        $push: { comments: post._id }
+        $push: { comments: postCreated._id }
       }
     );
   };
 
-  await User.findByIdAndUpdate(user, { $push: { posts: post._id } });
-
-  return Post.findByIdAndUpdate(post._id, 
-    {permissions},
-    {new: true}
-  )
+  const post = await Post.findById(postCreated._id)
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -73,16 +65,16 @@ export const createPostService = async (
       select: "username tag profileImg verified"
     }
   })
-  .populate({ 
-    path: "permissions",
-    select: "canComment privatePost"
-  });
+  .lean();
+
+  post.isYourPost = true;
+
+  return post
 };
 
 export const getTrendingPostsService = async (userId) => {
   const posts = await Post.find()
   .sort({totalLikes: -1})
-  .select("+likesList")
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -105,29 +97,41 @@ export const getTrendingPostsService = async (userId) => {
       select: "username tag profileImg verified"
     }
   })
-  .populate({ 
-    path: "permissions",
-    select: "canComment privatePost"
+  .lean()
+  .limit(10);
+  
+  return await checkPostLikedOrIsYour(posts, userId);
+}
+
+export const getCommentsService = async (userId, postId) => {
+  const posts = await Post.find({isCommentOf: postId})
+  .sort({totalLikes: -1})
+  .populate({
+    path: "user",
+    select: "username profileImg tag verified"
   })
+  .populate({ 
+    path: "isCommentOf",
+    strictPopulate: false,
+    select: "user",
+    populate: {
+      path: "user",
+      select: "tag"
+    }
+  })
+  .populate({ 
+    path: "isShareOf",
+    strictPopulate: false,
+    select: "user textContent imageContent createdAt",
+    populate: {
+      path: "user",
+      select: "username tag profileImg verified"
+    }
+  })
+  .lean()
   .limit(10);
 
-  const likedPostsIds = [];
-  const isYourPost = [];
-  
-  for (const post of posts) {
-    if(post.likesList.includes(userId)) {
-      likedPostsIds.push(post._id);
-    }
-    if(post._id === userId) {
-      isYourPost.push(post._id);
-    }
-  }
-
-  return {
-    likedPostsIds,
-    isYourPost,
-    posts
-  }
+  return await checkPostLikedOrIsYour(posts, userId);
 }
 
 export const getSearchPostsService = async (userId, param) => {
@@ -136,7 +140,6 @@ export const getSearchPostsService = async (userId, param) => {
       {textContent: {$regex: param, $options: "i"}},
     ]
   })
-  .select("+likesList")
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -159,35 +162,15 @@ export const getSearchPostsService = async (userId, param) => {
       select: "username tag profileImg verified"
     }
   })
-  .populate({ 
-    path: "permissions",
-    select: "canComment privatePost"
-  })
+  .lean()
   .limit(10);
   
-  const likedPostsIds = [];
-  const isYourPost = [];
-  
-  for (const post of posts) {
-    if(post.likesList.includes(userId)) {
-      likedPostsIds.push(post._id);
-    }
-    if(post._id === userId) {
-      isYourPost.push(post._id);
-    }
-  }
-
-  return {
-    likedPostsIds,
-    isYourPost,
-    posts
-  }
+  return await checkPostLikedOrIsYour(posts, userId);
 }
 
 export const getAllPostsService = async (userId) => { 
   const posts = await Post.find()
   .sort({_id: -1})
-  .select("+likesList")
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -210,33 +193,14 @@ export const getAllPostsService = async (userId) => {
       select: "username tag profileImg verified"
     }
   })
-  .populate({ 
-    path: "permissions",
-    select: "canComment privatePost"
-  })
+  .lean()
   .limit(10);
-
-  const likedPostsIds = [];
-  const isYourPost = [];
   
-  for (const post of posts) {
-    if(post.likesList.includes(userId)) {
-      likedPostsIds.push(post._id);
-    }
-    if(post._id === userId) {
-      isYourPost.push(post._id);
-    }
-  }
-
-  return {
-    likedPostsIds,
-    isYourPost,
-    posts
-  }
+  return await checkPostLikedOrIsYour(posts, userId);
 }
 
 export const getPostByIdService = async (id, userId) => {
-  const postQuery = Post.findById(id)  
+  const postPromise = Post.findById(id)  
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -264,76 +228,87 @@ export const getPostByIdService = async (id, userId) => {
       select: "username tag profileImg verified"
     }
   })
-  .populate({ 
-    path: "permissions",
-    select: "canComment privatePost"
-  })
   .limit(10);
 
-  const isLikedQuery = Post.find({likesList: userId, _id: id}, {_id: 1}).lean();
+  const likePromise = Like.findOne({userId, postId: id});
+  // const isLikedQuery = Post.find({likesList: userId, _id: id}, {_id: 1}).lean();
 
-  const [post, isLiked] = await Promise.all([postQuery, isLikedQuery])
+  const [post, isLiked] = await Promise.all([postPromise, likePromise])
 
   return {isLiked, post} 
 };
 
-export const getPostsByUserService = (userID) => Post.find({user: userID, isCommentOf: { $exists: false } })  
-.sort({_id: -1})  
-.populate({
-  path: "user",
-  select: "username profileImg tag verified"
-})
-.populate({ 
-  path: "isCommentOf",
-  strictPopulate: false,
-  select: "user",
-  populate: {
+export const getPostsByUserService = async (userID) => {
+  const posts = await Post.find({user: userID, isCommentOf: { $exists: false } })  
+  .sort({_id: -1})  
+  .populate({
     path: "user",
-    select: "tag"
-  }
-})
-.populate({ 
-  path: "isShareOf",
-  strictPopulate: false,
-  select: "user textContent imageContent createdAt",
-  populate: {
-    path: "user",
-    select: "username tag profileImg verified"
-  }
-})
-.populate({ 
-  path: "permissions",
-  select: "canComment privatePost"
-});
+    select: "username profileImg tag verified"
+  })
+  .populate({ 
+    path: "isCommentOf",
+    strictPopulate: false,
+    select: "user",
+    populate: {
+      path: "user",
+      select: "tag"
+    }
+  })
+  .populate({ 
+    path: "isShareOf",
+    strictPopulate: false,
+    select: "user textContent imageContent createdAt",
+    populate: {
+      path: "user",
+      select: "username tag profileImg verified"
+    }
+  })
+  .lean()
 
-export const getReplysByUserService = (userID) => Post.find({user: userID, isCommentOf: { $exists: true, $ne: null } })  
-.sort({_id: -1})  
-.populate({
-  path: "user",
-  select: "username profileImg tag verified"
-})
-.populate({ 
-  path: "isCommentOf",
-  strictPopulate: false,
-  select: "user",
-  populate: {
+  return await checkPostLikedOrIsYour(posts, userID);
+} 
+
+export const getReplysByUserService = async (userID) => {
+  const posts = await Post.find({user: userID, isCommentOf: { $exists: true, $ne: null } })  
+  .sort({_id: -1})  
+  .populate({
     path: "user",
-    select: "tag"
-  }
-})
-.populate({ 
-  path: "isShareOf",
-  strictPopulate: false,
-  select: "user textContent imageContent createdAt",
-  populate: {
-    path: "user",
-    select: "username tag profileImg verified"
-  }
-})
-.populate({ 
-  path: "permissions",
-  select: "canComment privatePost"
-});
+    select: "username profileImg tag verified"
+  })
+  .populate({ 
+    path: "isCommentOf",
+    strictPopulate: false,
+    select: "user",
+    populate: {
+      path: "user",
+      select: "tag"
+    }
+  })
+  .populate({ 
+    path: "isShareOf",
+    strictPopulate: false,
+    select: "user textContent imageContent createdAt",
+    populate: {
+      path: "user",
+      select: "username tag profileImg verified"
+    }
+  })
+  .lean()
+  
+  return await checkPostLikedOrIsYour(posts, userID);
+}
+
+export const getPostsLikedByUserService = async (userId) => {
+  const likes = await Like.find({userId});
+  const postIds = likes.map(like => like.postId);
+
+  const likedPosts = await Post.find({_id: { $in: postIds }})
+
+  return likedPosts
+} 
+
+  
+
 
 export const updatePostService = (id, textContent) => Post.findByIdAndUpdate(id, 
   { textContent, editedAt: Date.now() },
@@ -349,23 +324,52 @@ export const updatePostService = (id, textContent) => Post.findByIdAndUpdate(id,
 
 export const deletePostService = async (id) =>  Post.findOneAndDelete({_id: id});
 
-export const likePostService = async (userId, postId) => Post.findOneAndUpdate(
-    { _id: postId, likesList: { $nin: [userId] } },
-    {
-      $push: { likesList: userId },
-      $inc: { totalLikes: 1 } 
-    }
-);
+export const likePostService = async (userId, postId) => {
+  const like = await Like.findOne({userId, postId});
+
+  if(!like) {
+    const likePromise = Like.create({userId, postId});
+    const postPromise = Post.findByIdAndUpdate(postId,
+      {
+        $inc: { totalLikes: 1 } 
+      } 
+    );
+    await Promise.all([likePromise, postPromise])
+
+  } else {
+    const likePromise = Like.findOneAndDelete({userId, postId});
+    const postPromise = Post.findByIdAndUpdate(postId,
+      {
+        $inc: { totalLikes: -1 } 
+      } 
+    );
+    await Promise.all([likePromise, postPromise])
+  }
+
+  return await Like.countDocuments({postId})
+}
 
 export const getLikesService = (postId) => Post.findById(postId).select("totalLikes -_id"); // falta TESTAR 
 
-export const deleteLikePostService = async (userId, postId) => Post.findByIdAndUpdate(postId,
-  {
-    $pull: { likesList: userId },
-    $inc: { totalLikes: -1 } 
+export const getLikeDetailsService = (postId) => Like.find({post: postId});
+
+// export const updateShareService = (id) => Like.findByIdAndUpdate(id, {});
+
+
+async function checkPostLikedOrIsYour(posts,  userId) {
+  const likePromises = posts.map(post =>
+    Like.findOne({ userId, postId: post._id })
+  );
+
+  const likes = await Promise.all(likePromises);
+  
+  for (let i = 0; i < posts.length; i++) {
+    const post = posts[i];
+    const like = likes[i];
+
+    post.isYourPost = post.user._id.equals(userId);
+    post.liked = !!like;
   }
-);
 
-export const getLikeDetailsService = (postId) => Likes.find({post: postId});
-
-export const updateShareService = (id) => Likes.findByIdAndUpdate(id, {});
+  return posts
+}

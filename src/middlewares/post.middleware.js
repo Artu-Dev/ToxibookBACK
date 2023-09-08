@@ -5,9 +5,7 @@ import Post from "../models/Post.js";
 export const validPost = async (req, res, next) => {
   try {
     const imageContent = req.file?.location;
-    console.log(imageContent);
     const { textContent, isCommentOf, isShareOf } = req.body;
-    console.log(textContent, imageContent, isCommentOf, isShareOf);
 
     const postIds = []
     if (isCommentOf) {

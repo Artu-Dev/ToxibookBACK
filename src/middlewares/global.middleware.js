@@ -18,8 +18,8 @@ export const UserActionsVerify = async (req, res, next) => {
     const user = await getUserByIdService(userId);
 
     if(!user.canComment) return resMessage(res, 401, "Você não pode comentar!");
-    if(!user.canLike) return resMessage(res, 401, "Você não pode dar Like!");
-    if(!user.canPost) return resMessage(res, 401, "Você não pode dar Postar!");
+    // if(!user.canLike) return resMessage(res, 401, "Você não pode dar Like!");
+    if(!user.canPost) return resMessage(res, 401, "Você não pode Postar!");
 
     next();
   } catch (error) {
