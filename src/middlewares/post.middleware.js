@@ -7,6 +7,8 @@ export const validPost = async (req, res, next) => {
     const imageContent = req.file?.location;
     const { textContent, isCommentOf, isShareOf } = req.body;
 
+		const sanitizedText = textContent.replace(/<[^>]*>/g, "");
+
     const postIds = []
     if (isCommentOf) {
       const commentPost = await Post.findById(isCommentOf)
@@ -30,7 +32,7 @@ export const validPost = async (req, res, next) => {
       return res.status(400).send({ message: "PostIds inválidos"});
     };
 
-    if(!imageContent && !textContent && !isShareOf) return res.status(400).send({ message: "Preencha os campos corretamente"});
+    if(!imageContent && !sanitizedText && !isShareOf) return res.status(400).send({ message: "Preencha os campos corretamente"});
 
     next();
   } catch (error) {

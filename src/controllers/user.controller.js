@@ -27,8 +27,8 @@ export const updateUser = async (req, res) => {
       bannerImg = files?.bannerImg?.[0]?.location;
       bannerImgKey = files?.bannerImg?.[0]?.key;
     } else {
-      bannerImgKey = files.bannerImg?.[0]?.filename;
-      profileImgKey = files.profileImg?.[0]?.filename; 
+      bannerImgKey = files?.bannerImg?.[0]?.filename;
+      profileImgKey = files?.profileImg?.[0]?.filename;
       if(profileImgKey) profileImg = `${process.env.APP_URL}/files/${profileImgKey}`;
       if(bannerImgKey) bannerImg = `${process.env.APP_URL}/files/${bannerImgKey}`;
     } 
@@ -43,7 +43,7 @@ export const updateUser = async (req, res) => {
       deleteImage(oldBannerImgKey);
     }
 
-    const updatedUser = await updateUserService(id, bio, profileImg, profileImgKey, bannerImg, bannerImgKey, username);
+    const updatedUser = await updateUserService(id, bio.trim(), profileImg, profileImgKey, bannerImg, bannerImgKey, username.trim());
 
     res.send(updatedUser);
   } catch (error) {
