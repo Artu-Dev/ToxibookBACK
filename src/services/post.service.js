@@ -231,7 +231,6 @@ export const getPostByIdService = async (id, userId) => {
   .limit(10);
 
   const likePromise = Like.findOne({userId, postId: id});
-  // const isLikedQuery = Post.find({likesList: userId, _id: id}, {_id: 1}).lean();
 
   const [post, isLiked] = await Promise.all([postPromise, likePromise])
 
@@ -307,7 +306,6 @@ export const getPostsLikedByUserService = async (userId) => {
   return likedPosts
 } 
 
-  
 
 
 export const updatePostService = (id, textContent) => Post.findByIdAndUpdate(id, 

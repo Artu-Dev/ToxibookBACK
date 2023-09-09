@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 import aws from "aws-sdk";
-import User from "./User.js";
 import fs from "fs"
 import path from "path";
 import {promisify} from "util"
 import { fileURLToPath } from "url";
+import Like from "./Like.js"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,10 +45,6 @@ const PostSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: "posts"
   },
-  likesList: {
-    type: Array,
-    select: false
-  },
   totalLikes: {
     type: Number,
     default: 0
@@ -83,6 +79,8 @@ PostSchema.pre("findOneAndDelete", async function(next) {
   try {
     const id = this.getQuery()["_id"];
     const {isShareOf, isCommentOf, imageContent, ImageKey} = await Post.findById(id);
+
+    await Like.deleteMany({postId: id});
 
     if (isShareOf) {
       const sharePost = await Post.findByIdAndUpdate(isShareOf, {
