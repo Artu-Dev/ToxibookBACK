@@ -73,9 +73,15 @@ export const getAllPosts = async (req, res) => {
 
 export const getTrendingPosts = async (req, res) => {
   try {
-    const userId = req.userId;
-    const posts = await getTrendingPostsService(userId);
 
+    const page = parseInt(req.query.page) || 1;
+    if(isNaN(page) || page < 0) return res.status(401).send({message: "Page não é um numero valido"});
+
+    const itensPerPage = 10;
+    const skip = (page - 1) * itensPerPage;
+    
+    const userId = req.userId;
+    const posts = await getTrendingPostsService(userId, itensPerPage, skip);
     res.send(posts)
   } catch (error) {
     res.status(500).send({message: error.message});
