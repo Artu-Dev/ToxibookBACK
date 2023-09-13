@@ -104,9 +104,9 @@ export const getTrendingPostsService = async (userId, limit, skip) => {
   return await checkPostLikedOrIsYour(posts, userId);
 }
 
-export const getCommentsService = async (userId, postId) => {
+export const getCommentsService = async (userId, postId, itensPerPage, skip) => {
   const posts = await Post.find({isCommentOf: postId})
-  .sort({totalLikes: -1})
+  .sort({totalLikes: -1, _id: -1})
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -129,13 +129,14 @@ export const getCommentsService = async (userId, postId) => {
       select: "username tag profileImg verified"
     }
   })
+  .skip(skip)
+  .limit(itensPerPage)
   .lean()
-  .limit(10);
 
   return await checkPostLikedOrIsYour(posts, userId);
 }
 
-export const getSearchPostsService = async (userId, param) => {
+export const getSearchPostsService = async (userId, param, itensPerPage, skip) => {
   const posts = await Post.find({
     $or: [
       {textContent: {$regex: param, $options: "i"}},
@@ -163,13 +164,14 @@ export const getSearchPostsService = async (userId, param) => {
       select: "username tag profileImg verified"
     }
   })
+  .limit(itensPerPage)
+  .skip(skip)
   .lean()
-  .limit(10);
   
   return await checkPostLikedOrIsYour(posts, userId);
 }
 
-export const getAllPostsService = async (userId) => { 
+export const getAllPostsService = async (userId, itensPerPage, skip) => { 
   const posts = await Post.find()
   .sort({_id: -1})
   .populate({
@@ -195,7 +197,8 @@ export const getAllPostsService = async (userId) => {
     }
   })
   .lean()
-  .limit(10);
+  .limit(itensPerPage)
+  .skip(skip)
   
   return await checkPostLikedOrIsYour(posts, userId);
 }
@@ -238,9 +241,11 @@ export const getPostByIdService = async (id, userId) => {
   return {isLiked, post} 
 };
 
-export const getPostsByUserService = async (userID) => {
+export const getPostsByUserService = async (userID, itensPerPage, skip) => {
   const posts = await Post.find({user: userID, isCommentOf: { $exists: false } })  
   .sort({_id: -1})  
+  .limit(itensPerPage)
+  .skip(skip)
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -268,9 +273,11 @@ export const getPostsByUserService = async (userID) => {
   return await checkPostLikedOrIsYour(posts, userID);
 } 
 
-export const getReplysByUserService = async (userID) => {
+export const getReplysByUserService = async (userID, itensPerPage, skip) => {
   const posts = await Post.find({user: userID, isCommentOf: { $exists: true, $ne: null } })  
   .sort({_id: -1})  
+  .limit(itensPerPage)
+  .skip(skip)
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -350,7 +357,7 @@ export const likePostService = async (userId, postId) => {
 
 export const getLikesService = (postId) => Post.findById(postId).select("totalLikes -_id"); // falta TESTAR 
 
-export const getLikeDetailsService = (postId) => Like.find({post: postId});
+export const getLikeDetailsService = (postId, itensPerPage, skip) => Like.find({post: postId}).limit(itensPerPage).skip(skip);
 
 // export const updateShareService = (id) => Like.findByIdAndUpdate(id, {});
 
