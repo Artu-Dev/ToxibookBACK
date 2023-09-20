@@ -74,7 +74,7 @@ export const createPostService = async (
 
 export const getTrendingPostsService = async (userId, limit, skip) => {
   const posts = await Post.find()
-  .sort({totalLikes: -1, _id: -1})
+  .sort({totalLikes: -1, totalComments: -1, _id: -1})
   .limit(limit)
   .skip(skip)
   .populate({
@@ -106,7 +106,7 @@ export const getTrendingPostsService = async (userId, limit, skip) => {
 
 export const getCommentsService = async (userId, postId, itensPerPage, skip) => {
   const posts = await Post.find({isCommentOf: postId})
-  .sort({totalLikes: -1, _id: -1})
+  .sort({totalLikes: -1, totalComments: -1, _id: -1})
   .populate({
     path: "user",
     select: "username profileImg tag verified"
@@ -129,8 +129,8 @@ export const getCommentsService = async (userId, postId, itensPerPage, skip) => 
       select: "username tag profileImg verified"
     }
   })
-  .skip(skip)
   .limit(itensPerPage)
+  .skip(skip)
   .lean()
 
   return await checkPostLikedOrIsYour(posts, userId);
