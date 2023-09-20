@@ -3,8 +3,8 @@ import deleteImage from "../util/deleteImage.js";
 
 export const createUser = async (req, res) => {
   try {
-    const { username, email, password, bio, tag, profileImg, bannerImg} = req.body;
-    const user = await createUserService(username, email, password, bio, tag, profileImg, bannerImg);
+    const { username, email, password, tag} = req.body;
+    const user = await createUserService(username, email, password, tag.trim());
 
     res.send(user);
   } catch (error) {

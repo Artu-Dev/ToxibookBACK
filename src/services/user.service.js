@@ -1,15 +1,12 @@
 import Follow from "../models/Follow.js";
 import User from "../models/User.js";
 
-export const createUserService = async ( username, email, password, bio, tag, profileImg, bannerImg) => {
+export const createUserService = async ( username, email, password, tag) => {
   const user = await User.create({
     username,
     email,
     password,
-    bio,
     tag,
-    profileImg,
-    bannerImg
   });
 
   const follow = await Follow.create({ user: user._id });

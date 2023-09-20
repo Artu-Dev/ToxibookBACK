@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 import { getUserByIdService } from "../services/user.service.js";
 
 export const validUserCreateDatas = async (req, res, next) => {
-  const { username, email, password } = req.body;
-  if(!username || !email || !password) return resMessage(res, 400, "Preencha todos os campos corretamente");
+  const { username, email, password, tag } = req.body;
+  if(!username || !email || !password || !tag) return resMessage(res, 400, "Preencha todos os campos corretamente");
 
   next();
 }
