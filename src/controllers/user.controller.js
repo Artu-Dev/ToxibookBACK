@@ -43,7 +43,7 @@ export const updateUser = async (req, res) => {
       deleteImage(oldBannerImgKey);
     }
 
-    const updatedUser = await updateUserService(id, bio.trim(), profileImg, profileImgKey, bannerImg, bannerImgKey, username.trim());
+    const updatedUser = await updateUserService(id, bio?.trim(), profileImg, profileImgKey, bannerImg, bannerImgKey, username?.trim());
 
     res.send(updatedUser);
   } catch (error) {
