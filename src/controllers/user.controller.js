@@ -47,6 +47,25 @@ export const updateUser = async (req, res) => {
 
     res.send(updatedUser);
   } catch (error) {
+    const {files} = req;
+
+    let bannerImgKey;
+    let profileImgKey; 
+    if(process.env.STORAGE_TYPE === "s3") {
+      profileImgKey = files?.profileImg?.[0]?.key;
+      bannerImgKey = files?.bannerImg?.[0]?.key;
+    } else {
+      bannerImgKey = files?.bannerImg?.[0]?.filename;
+      profileImgKey = files?.profileImg?.[0]?.filename;
+    } 
+    // falta testar se apaga msm
+    if (profileImgKey) {
+      deleteImage(profileImgKey);
+    } 
+    if (bannerImgKey) {
+      deleteImage(bannerImgKey);
+    }
+
     resMessage(res, 500, error.message);
   }
 }
